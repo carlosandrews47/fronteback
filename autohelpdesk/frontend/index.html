@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Help Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   RESET & VARIABLES
+═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0a0e1a;
+  --bg2:       #111827;
+  --bg3:       #1a2235;
+  --card:      #141c2e;
+  --border:    rgba(255,255,255,0.07);
+  --accent:    #f97316;
+  --accent2:   #fb923c;
+  --blue:      #3b82f6;
+  --green:     #22c55e;
+  --red:       #ef4444;
+  --yellow:    #eab308;
+  --purple:    #a855f7;
+  --text:      #f1f5f9;
+  --text2:     #94a3b8;
+  --text3:     #475569;
+  --radius:    12px;
+  --shadow:    0 4px 24px rgba(0,0,0,0.4);
+  --font:      'DM Sans', sans-serif;
+  --font2:     'Syne', sans-serif;
+  --sidebar-w: 260px;
+}
+
+html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+button { cursor: pointer; font-family: var(--font); border: none; outline: none; }
+input, textarea, select { font-family: var(--font); outline: none; }
+a { text-decoration: none; color: inherit; }
+
+/* ═══════════════════════════════════════════════════
+   AUTH SCREEN
+═══════════════════════════════════════════════════ */
+#auth-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 20% 50%, rgba(249,115,22,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.08) 0%, transparent 50%),
+              var(--bg);
+}
+.auth-box {
+  width: 420px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 40px; box-shadow: var(--shadow);
+  animation: fadeUp 0.4s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+.auth-logo { text-align: center; margin-bottom: 32px; }
+.auth-logo .logo-icon { font-size: 40px; margin-bottom: 8px; }
+.auth-logo h1 { font-family: var(--font2); font-size: 26px; font-weight: 800; color: var(--accent); }
+.auth-logo p { color: var(--text2); font-size: 13px; margin-top: 4px; }
+
+.auth-tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 28px; }
+.auth-tab { flex: 1; padding: 8px; border-radius: 8px; background: none; color: var(--text2); font-size: 13px; font-weight: 500; transition: all .2s; }
+.auth-tab.active { background: var(--accent); color: white; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input, .form-group select {
+  width: 100%; padding: 12px 14px; background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text); font-size: 14px; transition: border .2s;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+.form-group select option { background: var(--bg2); }
+
+.plan-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.plan-card {
+  padding: 14px; border: 2px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; transition: all .2s; text-align: center;
+}
+.plan-card:hover { border-color: var(--accent); }
+.plan-card.selected { border-color: var(--accent); background: rgba(249,115,22,0.08); }
+.plan-card .plan-name { font-weight: 700; font-family: var(--font2); font-size: 15px; margin-bottom: 4px; }
+.plan-card .plan-price { font-size: 18px; font-weight: 800; color: var(--accent); }
+.plan-card .plan-sla { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--radius); font-weight: 600; font-size: 14px; transition: all .2s; }
+.btn-primary { background: var(--accent); color: white; width: 100%; }
+.btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+.btn-danger { background: var(--red); color: white; }
+.btn-green { background: var(--green); color: white; }
+.btn-blue { background: var(--blue); color: white; }
+.btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 8px; }
+
+.error-msg { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
+
+/* ═══════════════════════════════════════════════════
+   APP LAYOUT
+═══════════════════════════════════════════════════ */
+#app { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-w); background: var(--card); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
+}
+.sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+.sidebar-logo .logo-text { font-family: var(--font2); font-size: 18px; font-weight: 800; color: var(--accent); }
+.sidebar-logo .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.sidebar-user { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+.user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white; flex-shrink: 0; }
+.user-info .user-name { font-weight: 600; font-size: 13px; }
+.user-info .user-role { font-size: 11px; color: var(--text2); }
+
+.nav { padding: 12px 0; flex: 1; }
+.nav-section { padding: 8px 20px 4px; font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+  color: var(--text2); font-size: 13px; font-weight: 500; cursor: pointer;
+  border-left: 3px solid transparent; transition: all .15s; border-radius: 0 8px 8px 0; margin: 1px 8px 1px 0;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.nav-item.active { color: var(--accent); background: rgba(249,115,22,0.08); border-left-color: var(--accent); }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center; }
+
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+.logout-btn { width: 100%; padding: 10px; background: none; border: 1px solid var(--border); color: var(--text2); border-radius: 8px; font-size: 13px; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* MAIN CONTENT */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { height: 60px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 16px; background: var(--card); flex-shrink: 0; }
+.topbar h2 { font-family: var(--font2); font-size: 18px; font-weight: 700; flex: 1; }
+.notif-btn { position: relative; width: 36px; height: 36px; border-radius: 8px; background: var(--bg2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; }
+
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* ═══════════════════════════════════════════════════
+   CARDS & STATS
+═══════════════════════════════════════════════════ */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;
+  position: relative; overflow: hidden; transition: transform .2s;
+}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card::before { content: ''; position: absolute; inset: 0; opacity: 0.04; border-radius: var(--radius); }
+.stat-card.orange::before { background: var(--accent); }
+.stat-card.blue::before   { background: var(--blue); }
+.stat-card.green::before  { background: var(--green); }
+.stat-card.red::before    { background: var(--red); }
+.stat-card.purple::before { background: var(--purple); }
+.stat-value { font-family: var(--font2); font-size: 32px; font-weight: 800; line-height: 1; }
+.stat-card.orange .stat-value { color: var(--accent); }
+.stat-card.blue   .stat-value { color: var(--blue); }
+.stat-card.green  .stat-value { color: var(--green); }
+.stat-card.red    .stat-value { color: var(--red); }
+.stat-card.purple .stat-value { color: var(--purple); }
+.stat-label { font-size: 12px; color: var(--text2); margin-top: 8px; font-weight: 500; }
+
+/* ═══════════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════════ */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-family: var(--font2); font-size: 15px; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 13px; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ═══════════════════════════════════════════════════
+   BADGES
+═══════════════════════════════════════════════════ */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-aberto      { background: rgba(59,130,246,0.15);  color: #93c5fd; }
+.badge-em_atendimento { background: rgba(234,179,8,0.15);  color: #fde047; }
+.badge-escalado    { background: rgba(168,85,247,0.15); color: #d8b4fe; }
+.badge-resolvido   { background: rgba(34,197,94,0.15);  color: #86efac; }
+.badge-cancelado   { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+.badge-critica     { background: rgba(239,68,68,0.2);   color: #fca5a5; }
+.badge-alta        { background: rgba(249,115,22,0.15); color: #fdba74; }
+.badge-media       { background: rgba(234,179,8,0.12);  color: #fde047; }
+.badge-baixa       { background: rgba(34,197,94,0.1);   color: #86efac; }
+.badge-N1          { background: rgba(59,130,246,0.12); color: #93c5fd; }
+.badge-N2          { background: rgba(168,85,247,0.12); color: #d8b4fe; }
+.badge-N3          { background: rgba(239,68,68,0.12);  color: #fca5a5; }
+.badge-basico      { background: rgba(59,130,246,0.12); color: #93c5fd; }
+.badge-premio      { background: rgba(249,115,22,0.15); color: #fdba74; }
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center;
+  justify-content: center; z-index: 1000; backdrop-filter: blur(4px); animation: fadeIn .2s;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+  animation: slideUp .25s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+@keyframes slideUp { from { transform: translateY(30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.modal-title { font-family: var(--font2); font-size: 17px; font-weight: 700; }
+.modal-close { width: 30px; height: 30px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; color: var(--text2); font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.modal-close:hover { background: var(--red); color: white; border-color: var(--red); }
+.modal-body { padding: 20px 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ═══════════════════════════════════════════════════
+   DETALHE DO CHAMADO
+═══════════════════════════════════════════════════ */
+.chamado-detail { display: grid; gap: 16px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.detail-item { background: var(--bg2); border-radius: 8px; padding: 12px; }
+.detail-item .d-label { font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+.detail-item .d-value { font-size: 14px; font-weight: 500; }
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.timeline-item { position: relative; margin-bottom: 14px; }
+.timeline-item::before { content: ''; position: absolute; left: -21px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+.timeline-item .t-action { font-size: 13px; font-weight: 600; }
+.timeline-item .t-desc { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.timeline-item .t-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.service-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.service-btn {
+  padding: 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg2);
+  text-align: center; cursor: pointer; transition: all .2s;
+}
+.service-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(249,115,22,0.05); }
+.service-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.service-btn .svc-icon { font-size: 24px; margin-bottom: 6px; }
+.service-btn .svc-name { font-size: 12px; font-weight: 600; }
+
+/* SLA timer */
+.sla-timer { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2); }
+.sla-timer.ok { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2); }
+.sla-timer.vencido { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); }
+.sla-count { font-family: var(--font2); font-size: 20px; font-weight: 800; color: var(--accent); }
+.sla-timer.ok .sla-count { color: var(--green); }
+.sla-timer.vencido .sla-count { color: var(--red); }
+
+/* ═══════════════════════════════════════════════════
+   FORMULÁRIO DE CHAMADO
+═══════════════════════════════════════════════════ */
+.tipo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.tipo-btn { padding: 12px 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg2); text-align: center; cursor: pointer; transition: all .2s; font-size: 11px; font-weight: 600; color: var(--text2); }
+.tipo-btn:hover, .tipo-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(249,115,22,0.06); }
+.tipo-btn .tipo-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+.stars { display: flex; gap: 6px; }
+.star { font-size: 24px; cursor: pointer; color: var(--text3); transition: color .15s; }
+.star.active { color: var(--yellow); }
+
+/* ═══════════════════════════════════════════════════
+   PLANOS PAGE
+═══════════════════════════════════════════════════ */
+.plans-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 720px; margin: 0 auto; }
+.plan-detail-card {
+  background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 28px; position: relative; overflow: hidden;
+}
+.plan-detail-card.destaque { border-color: var(--accent); }
+.plan-detail-card .plan-tag { position: absolute; top: 16px; right: 16px; background: var(--accent); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+.plan-price-big { font-family: var(--font2); font-size: 36px; font-weight: 800; color: var(--accent); }
+.plan-period { font-size: 13px; color: var(--text2); }
+.plan-features { list-style: none; margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.plan-features li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+.feat-ok  { color: var(--green); }
+.feat-no  { color: var(--text3); }
+.plan-current-badge { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #86efac; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-top: 14px; }
+
+/* ═══════════════════════════════════════════════════
+   NOTIFICAÇÕES
+═══════════════════════════════════════════════════ */
+.notif-list { display: flex; flex-direction: column; gap: 8px; }
+.notif-item { padding: 14px; border-radius: 10px; background: var(--bg2); border: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
+.notif-item.unread { border-left: 3px solid var(--accent); background: rgba(249,115,22,0.04); }
+.notif-icon { font-size: 20px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: 8px; flex-shrink: 0; }
+.notif-titulo { font-size: 13px; font-weight: 600; }
+.notif-msg { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.notif-time { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* ═══════════════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════════════ */
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+.empty-state h3 { font-family: var(--font2); font-size: 18px; margin-bottom: 8px; }
+.empty-state p { color: var(--text2); font-size: 13px; }
+
+/* ═══════════════════════════════════════════════════
+   SEARCH & FILTERS
+═══════════════════════════════════════════════════ */
+.filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 200px; position: relative; }
+.search-box input { width: 100%; padding: 9px 12px 9px 36px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 13px; }
+.search-box::before { content: '🔍'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 13px; }
+.filter-select { padding: 9px 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 13px; }
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+#toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
+.toast { padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: var(--shadow); animation: toastIn .25s ease; display: flex; align-items: center; gap: 8px; max-width: 320px; }
+@keyframes toastIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+.toast.success { background: #166534; border: 1px solid #16a34a; color: #dcfce7; }
+.toast.error   { background: #7f1d1d; border: 1px solid #dc2626; color: #fee2e2; }
+.toast.info    { background: #1e3a5f; border: 1px solid #3b82f6; color: #dbeafe; }
+
+/* Loading */
+.spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-overlay { display: flex; align-items: center; justify-content: center; min-height: 200px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+textarea { width: 100%; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 14px; resize: vertical; min-height: 90px; }
+textarea:focus { border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="logo-icon">🚗</div>
+      <h1>Auto Help Desk</h1>
+      <p>Assistência veicular inteligente</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Entrar</button>
+      <button class="auth-tab" onclick="switchTab('registro')">Cadastrar</button>
+    </div>
+    <div id="auth-error" class="error-msg" style="display:none"></div>
+
+    <!-- LOGIN -->
+    <div id="tab-login">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" value="admin@autohelpdesk.com">
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••" value="password">
+      </div>
+      <button class="btn btn-primary" onclick="fazerLogin()" id="btn-login">Entrar</button>
+      <p style="text-align:center;font-size:12px;color:var(--text3);margin-top:12px;">
+        Admin: admin@autohelpdesk.com | Senha: password
+      </p>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="tab-registro" style="display:none">
+      <div class="form-group"><label>Nome Completo</label><input type="text" id="reg-nome" placeholder="João Silva"></div>
+      <div class="form-group"><label>E-mail</label><input type="email" id="reg-email" placeholder="joao@email.com"></div>
+      <div class="form-group"><label>Senha</label><input type="password" id="reg-senha" placeholder="Mínimo 6 caracteres"></div>
+      <div class="form-group"><label>Telefone</label><input type="tel" id="reg-tel" placeholder="(71) 99999-0000"></div>
+      <div class="form-group"><label>Escolha seu Plano</label></div>
+      <div class="plan-cards" id="plan-cards-reg"></div>
+      <button class="btn btn-primary" onclick="fazerRegistro()" id="btn-reg">Criar Conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">🚗 Auto Help Desk</div>
+      <div class="logo-sub">Assistência Veicular SaaS</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Carregando...</div>
+        <div class="user-role" id="user-role">—</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav-menu"></nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="sair()">🚪 Sair</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="page-title">Dashboard</h2>
+      <button class="notif-btn" onclick="navegar('notificacoes')">
+        🔔<span class="notif-dot" id="notif-dot" style="display:none"></span>
+      </button>
+    </div>
+    <div class="content" id="page-content">
+      <div class="loading-overlay"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" class="modal-overlay" style="display:none" onclick="fecharModalOverlay(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Modal</span>
+      <button class="modal-close" onclick="fecharModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════
+const API = 'http://localhost:3001/api';
+let state = {
+  token: localStorage.getItem('ahd_token'),
+  usuario: JSON.parse(localStorage.getItem('ahd_user') || 'null'),
+  paginaAtual: 'dashboard',
+  planos: [],
+  planoSelecionado: null,
+  chamados: [],
+  slaIntervals: {},
+};
+
+// ═══════════════════════════════════════════════════
+// API HELPER
+// ═══════════════════════════════════════════════════
+async function api(method, path, body = null, formData = null) {
+  const opts = {
+    method,
+    headers: { 'Authorization': `Bearer ${state.token}` }
+  };
+  if (formData) {
+    opts.body = formData;
+  } else if (body) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(API + path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.erro || 'Erro na requisição');
+  return data;
+}
+
+// ═══════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════
+function toast(msg, tipo = 'success') {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${tipo}`;
+  el.innerHTML = `<span>${icons[tipo]}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ═══════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', i === (tab==='login'?0:1)));
+  document.getElementById('tab-login').style.display   = tab==='login' ? '' : 'none';
+  document.getElementById('tab-registro').style.display = tab==='registro' ? '' : 'none';
+  document.getElementById('auth-error').style.display = 'none';
+  if (tab === 'registro') carregarPlanosAuth();
+}
+
+async function carregarPlanosAuth() {
+  try {
+    const planos = await api('GET', '/planos');
+    state.planos = planos;
+    const container = document.getElementById('plan-cards-reg');
+    container.innerHTML = planos.map(p => `
+      <div class="plan-card" onclick="selecionarPlanoReg(${p.id},this)">
+        <div class="plan-name">${p.nome}</div>
+        <div class="plan-price">R$ ${parseFloat(p.preco).toFixed(2).replace('.',',')}</div>
+        <div class="plan-sla">SLA: ${p.sla_minutos} min</div>
+      </div>`).join('');
+  } catch(e){}
+}
+
+function selecionarPlanoReg(id, el) {
+  state.planoSelecionado = id;
+  document.querySelectorAll('#plan-cards-reg .plan-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value;
+  const senha = document.getElementById('login-senha').value;
+  const btn = document.getElementById('btn-login');
+  btn.innerHTML = '<div class="spinner"></div>'; btn.disabled = true;
+  document.getElementById('auth-error').style.display = 'none';
+  try {
+    const data = await api('POST', '/auth/login', { email, senha });
+    state.token = data.token;
+    state.usuario = data.usuario;
+    localStorage.setItem('ahd_token', data.token);
+    localStorage.setItem('ahd_user', JSON.stringify(data.usuario));
+    iniciarApp();
+  } catch(e) {
+    document.getElementById('auth-error').textContent = e.message;
+    document.getElementById('auth-error').style.display = 'block';
+  } finally { btn.innerHTML = 'Entrar'; btn.disabled = false; }
+}
+
+async function fazerRegistro() {
+  const nome  = document.getElementById('reg-nome').value;
+  const email = document.getElementById('reg-email').value;
+  const senha = document.getElementById('reg-senha').value;
+  const tel   = document.getElementById('reg-tel').value;
+  if (!nome||!email||!senha) return toast('Preencha nome, email e senha.','error');
+  const btn = document.getElementById('btn-reg');
+  btn.innerHTML = '<div class="spinner"></div>'; btn.disabled = true;
+  try {
+    await api('POST', '/auth/registrar', { nome, email, senha, telefone: tel, plano_id: state.planoSelecionado });
+    toast('Cadastro realizado! Faça login.');
+    switchTab('login');
+    document.getElementById('login-email').value = email;
+  } catch(e) {
+    document.getElementById('auth-error').textContent = e.message;
+    document.getElementById('auth-error').style.display = 'block';
+  } finally { btn.innerHTML = 'Criar Conta'; btn.disabled = false; }
+}
+
+function sair() {
+  localStorage.removeItem('ahd_token');
+  localStorage.removeItem('ahd_user');
+  state.token = null; state.usuario = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+// ═══════════════════════════════════════════════════
+// APP INIT
+// ═══════════════════════════════════════════════════
+function iniciarApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const u = state.usuario;
+  document.getElementById('user-name').textContent = u.nome;
+  document.getElementById('user-role').textContent = perfisLabel[u.perfil] || u.perfil;
+  document.getElementById('user-avatar').textContent = u.nome.charAt(0).toUpperCase();
+  renderNav();
+  navegar('dashboard');
+  carregarNotifCount();
+  setInterval(carregarNotifCount, 30000);
+}
+
+const perfisLabel = {
+  cliente:'Cliente', atendente_n1:'Atendente N1',
+  tecnico_n2:'Técnico N2', engenheiro_n3:'Engenheiro N3', admin:'Administrador'
+};
+
+function renderNav() {
+  const p = state.usuario.perfil;
+  const menus = {
+    comum: [
+      { id:'dashboard',    icon:'📊', label:'Dashboard' },
+      { id:'chamados',     icon:'🎫', label:'Chamados' },
+      { id:'notificacoes', icon:'🔔', label:'Notificações' },
+    ],
+    cliente: [
+      { id:'abrir-chamado',icon:'➕', label:'Abrir Chamado' },
+      { id:'meus-veiculos',icon:'🚗', label:'Meus Veículos' },
+      { id:'meu-plano',    icon:'⭐', label:'Meu Plano' },
+    ],
+    atendente: [
+      { id:'chamados-abertos', icon:'🚨', label:'Fila de Atendimento' },
+    ],
+    admin: [
+      { id:'usuarios',     icon:'👥', label:'Usuários' },
+    ],
+  };
+
+  let items = [...menus.comum];
+  if (p === 'cliente') items = [...items, ...menus.cliente];
+  if (['atendente_n1','tecnico_n2','engenheiro_n3'].includes(p)) items = [...items, ...menus.atendente];
+  if (p === 'admin') items = [...items, ...menus.atendente, ...menus.admin];
+
+  document.getElementById('nav-menu').innerHTML = items.map(m => `
+    <div class="nav-item" id="nav-${m.id}" onclick="navegar('${m.id}')">
+      <span class="icon">${m.icon}</span>
+      <span>${m.label}</span>
+      ${m.id==='notificacoes'?'<span class="nav-badge" id="notif-count" style="display:none">0</span>':''}
+    </div>`).join('');
+}
+
+function navegar(pagina) {
+  state.paginaAtual = pagina;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById(`nav-${pagina}`);
+  if (navEl) navEl.classList.add('active');
+  const titles = {
+    'dashboard':'Dashboard','chamados':'Chamados','notificacoes':'Notificações',
+    'abrir-chamado':'Abrir Chamado','meus-veiculos':'Meus Veículos','meu-plano':'Meu Plano',
+    'chamados-abertos':'Fila de Atendimento','usuarios':'Usuários',
+  };
+  document.getElementById('page-title').textContent = titles[pagina] || pagina;
+  const pages = {
+    'dashboard':        renderDashboard,
+    'chamados':         renderChamados,
+    'notificacoes':     renderNotificacoes,
+    'abrir-chamado':    renderAbrirChamado,
+    'meus-veiculos':    renderVeiculos,
+    'meu-plano':        renderPlano,
+    'chamados-abertos': () => renderChamados('aberto'),
+    'usuarios':         renderUsuarios,
+  };
+  if (pages[pagina]) pages[pagina]();
+}
+
+async function carregarNotifCount() {
+  try {
+    const notifs = await api('GET', '/notificacoes');
+    const naoLidas = notifs.filter(n => !n.lida).length;
+    const badge = document.getElementById('notif-count');
+    const dot   = document.getElementById('notif-dot');
+    if (badge) { badge.textContent = naoLidas; badge.style.display = naoLidas ? 'inline-block' : 'none'; }
+    if (dot) dot.style.display = naoLidas ? '' : 'none';
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════
+async function renderDashboard() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  try {
+    const d = await api('GET', '/dashboard');
+    const t = d.totais;
+    c.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card orange"><div class="stat-value">${t.total||0}</div><div class="stat-label">Total de Chamados</div></div>
+        <div class="stat-card blue"><div class="stat-value">${t.abertos||0}</div><div class="stat-label">Abertos</div></div>
+        <div class="stat-card orange"><div class="stat-value">${t.em_atendimento||0}</div><div class="stat-label">Em Atendimento</div></div>
+        <div class="stat-card purple"><div class="stat-value">${t.escalados||0}</div><div class="stat-label">Escalados</div></div>
+        <div class="stat-card green"><div class="stat-value">${t.resolvidos||0}</div><div class="stat-label">Resolvidos</div></div>
+        <div class="stat-card red"><div class="stat-value">${t.criticos||0}</div><div class="stat-label">Críticos</div></div>
+        <div class="stat-card green"><div class="stat-value">${t.sla_ok||0}</div><div class="stat-label">SLA Cumprido</div></div>
+        <div class="stat-card orange"><div class="stat-value">${t.media_avaliacao||'—'}</div><div class="stat-label">Avaliação Média ⭐</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Chamados por Nível</span></div>
+          ${d.por_nivel.map(n=>`
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+              <span class="badge badge-${n.nivel}">${n.nivel}</span>
+              <span style="font-family:var(--font2);font-weight:700">${n.total}</span>
+            </div>`).join('')}
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Tipos de Ocorrência</span></div>
+          ${d.por_tipo.map(t=>`
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:13px">${tipoLabel(t.tipo)}</span>
+              <span style="font-family:var(--font2);font-weight:700;color:var(--accent)">${t.total}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Últimos Chamados</span>
+          <button class="btn btn-ghost btn-sm" onclick="navegar('chamados')">Ver todos</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Número</th><th>Cliente</th><th>Título</th><th>Nível</th><th>Status</th><th>Prioridade</th><th>Data</th><th></th></tr>
+            ${d.ultimos.map(ch=>`<tr>
+              <td style="font-family:var(--font2);font-size:12px;color:var(--text2)">${ch.numero}</td>
+              <td>${ch.cliente_nome}</td>
+              <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ch.titulo}</td>
+              <td><span class="badge badge-${ch.nivel}">${ch.nivel}</span></td>
+              <td><span class="badge badge-${ch.status}">${statusLabel(ch.status)}</span></td>
+              <td><span class="badge badge-${ch.prioridade}">${ch.prioridade}</span></td>
+              <td style="color:var(--text2);font-size:12px">${formatDate(ch.criado_em)}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="abrirDetalhe(${ch.id})">Ver</button></td>
+            </tr>`).join('')}
+          </table>
+        </div>
+      </div>`;
+  } catch(e) {
+    // Dashboard pode não estar disponível para clientes
+    renderChamados();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// CHAMADOS
+// ═══════════════════════════════════════════════════
+async function renderChamados(statusFiltro = '') {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  try {
+    const q = statusFiltro ? `?status=${statusFiltro}` : '';
+    const data = await api('GET', `/chamados${q}`);
+    state.chamados = data.chamados;
+    const isStaff = state.usuario.perfil !== 'cliente';
+
+    c.innerHTML = `
+      <div class="filters">
+        <div class="search-box"><input type="text" placeholder="Buscar por número ou título..." oninput="filtrarChamados(this.value)" id="search-chamados"></div>
+        <select class="filter-select" onchange="filtrarChamadosStatus(this.value)">
+          <option value="">Todos os status</option>
+          <option value="aberto">Aberto</option>
+          <option value="em_atendimento">Em Atendimento</option>
+          <option value="escalado">Escalado</option>
+          <option value="resolvido">Resolvido</option>
+        </select>
+        <select class="filter-select" onchange="filtrarChamadosNivel(this.value)">
+          <option value="">Todos os níveis</option>
+          <option value="N1">N1</option>
+          <option value="N2">N2</option>
+          <option value="N3">N3</option>
+        </select>
+        ${state.usuario.perfil==='cliente' ? `<button class="btn btn-primary btn-sm" onclick="navegar('abrir-chamado')">➕ Abrir Chamado</button>` : ''}
+      </div>
+      <div class="card">
+        <div class="table-wrap" id="chamados-table">
+          ${renderTabelaChamados(data.chamados, isStaff)}
+        </div>
+        <div style="color:var(--text2);font-size:12px;padding:8px 0">${data.total} chamados encontrados</div>
+      </div>`;
+  } catch(e) { c.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Erro ao carregar</h3><p>${e.message}</p></div>`; }
+}
+
+function renderTabelaChamados(chamados, isStaff) {
+  if (!chamados.length) return '<div class="empty-state"><div class="empty-icon">🎫</div><h3>Nenhum chamado encontrado</h3><p>Abra seu primeiro chamado!</p></div>';
+  return `<table>
+    <tr><th>Número</th><th>Título</th>${isStaff?'<th>Cliente</th>':''}<th>Nível</th><th>Status</th><th>Prioridade</th><th>SLA</th><th>Data</th><th></th></tr>
+    ${chamados.map(ch=>`<tr>
+      <td style="font-family:var(--font2);font-size:12px;color:var(--accent)">${ch.numero}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ch.titulo}</td>
+      ${isStaff?`<td>${ch.cliente_nome}</td>`:''}
+      <td><span class="badge badge-${ch.nivel}">${ch.nivel}</span></td>
+      <td><span class="badge badge-${ch.status}">${statusLabel(ch.status)}</span></td>
+      <td><span class="badge badge-${ch.prioridade}">${ch.prioridade}</span></td>
+      <td>${renderSLABadge(ch)}</td>
+      <td style="color:var(--text2);font-size:12px">${formatDate(ch.criado_em)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="abrirDetalhe(${ch.id})">Ver ›</button></td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+function renderSLABadge(ch) {
+  if (!ch.sla_prazo || ch.status === 'resolvido') return '—';
+  const diff = new Date(ch.sla_prazo) - Date.now();
+  if (diff < 0) return '<span class="badge badge-critica">⏰ Vencido</span>';
+  const mins = Math.floor(diff / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  return `<span class="badge badge-media" id="sla-${ch.id}">⏱ ${mins}:${String(secs).padStart(2,'0')}</span>`;
+}
+
+function filtrarChamados(q) {
+  const filtrado = state.chamados.filter(ch =>
+    ch.numero.toLowerCase().includes(q.toLowerCase()) ||
+    ch.titulo.toLowerCase().includes(q.toLowerCase())
+  );
+  document.getElementById('chamados-table').innerHTML = renderTabelaChamados(filtrado, state.usuario.perfil !== 'cliente');
+}
+
+function filtrarChamadosStatus(s) {
+  const url = s ? `?status=${s}` : '';
+  api('GET', `/chamados${url}`).then(data => {
+    state.chamados = data.chamados;
+    document.getElementById('chamados-table').innerHTML = renderTabelaChamados(data.chamados, state.usuario.perfil !== 'cliente');
+  }).catch(()=>{});
+}
+function filtrarChamadosNivel(n) {
+  const url = n ? `?nivel=${n}` : '';
+  api('GET', `/chamados${url}`).then(data => {
+    state.chamados = data.chamados;
+    document.getElementById('chamados-table').innerHTML = renderTabelaChamados(data.chamados, state.usuario.perfil !== 'cliente');
+  }).catch(()=>{});
+}
+
+// ─── DETALHE DO CHAMADO ────────────────────────────────────────────────
+async function abrirDetalhe(id) {
+  abrirModal('Carregando...', '<div class="loading-overlay"><div class="spinner"></div></div>', []);
+  try {
+    const ch = await api('GET', `/chamados/${id}`);
+    const u = state.usuario;
+    const isStaff = u.perfil !== 'cliente';
+    const isResolvido = ch.status === 'resolvido';
+
+    const body = `
+      <div class="chamado-detail">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-family:var(--font2);font-size:18px;font-weight:800;color:var(--accent)">${ch.numero}</span>
+          <span class="badge badge-${ch.status}">${statusLabel(ch.status)}</span>
+          <span class="badge badge-${ch.nivel}">${ch.nivel}</span>
+          <span class="badge badge-${ch.prioridade}">${ch.prioridade}</span>
+          ${ch.plano_nome ? `<span class="badge badge-${ch.plano_nome.toLowerCase()}">${ch.plano_nome}</span>` : ''}
+        </div>
+
+        <div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:6px">${ch.titulo}</div>
+          ${ch.descricao?`<p style="color:var(--text2);font-size:13px">${ch.descricao}</p>`:''}
+        </div>
+
+        ${ch.sla_prazo && !isResolvido ? `
+        <div class="sla-timer" id="sla-detail-wrap">
+          <span>⏱</span>
+          <div>
+            <div style="font-size:11px;color:var(--text2)">Prazo SLA</div>
+            <div class="sla-count" id="sla-detail-count">—</div>
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-left:auto">até ${formatDateTime(ch.sla_prazo)}</div>
+        </div>` : ch.sla_cumprido !== null ? `
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;background:${ch.sla_cumprido?'rgba(34,197,94,0.08)':'rgba(239,68,68,0.08)'};border:1px solid ${ch.sla_cumprido?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)'}">
+          ${ch.sla_cumprido?'✅ SLA Cumprido':'❌ SLA Violado'}
+        </div>` : ''}
+
+        <div class="detail-grid">
+          <div class="detail-item"><div class="d-label">Cliente</div><div class="d-value">${ch.cliente_nome}</div></div>
+          <div class="detail-item"><div class="d-label">Telefone</div><div class="d-value">${ch.cliente_tel||'—'}</div></div>
+          <div class="detail-item"><div class="d-label">Tipo</div><div class="d-value">${tipoLabel(ch.tipo)}</div></div>
+          <div class="detail-item"><div class="d-label">Atendente</div><div class="d-value">${ch.atendente_nome||'Aguardando'}</div></div>
+          ${ch.placa?`<div class="detail-item"><div class="d-label">Veículo</div><div class="d-value">${ch.placa} ${ch.modelo||''}</div></div>`:''}
+          ${ch.localizacao?`<div class="detail-item"><div class="d-label">Localização</div><div class="d-value">${ch.localizacao}</div></div>`:''}
+          <div class="detail-item"><div class="d-label">Aberto em</div><div class="d-value">${formatDateTime(ch.criado_em)}</div></div>
+          ${ch.resolvido_em?`<div class="detail-item"><div class="d-label">Resolvido em</div><div class="d-value">${formatDateTime(ch.resolvido_em)}</div></div>`:''}
+        </div>
+
+        ${ch.solucao ? `<div class="detail-item" style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15)"><div class="d-label">✅ Solução</div><div class="d-value" style="margin-top:4px">${ch.solucao}</div></div>` : ''}
+
+        ${isResolvido && u.perfil==='cliente' && !ch.avaliacao ? `
+        <div>
+          <div style="font-weight:600;margin-bottom:8px">Avalie o atendimento:</div>
+          <div class="stars" id="stars">
+            ${[1,2,3,4,5].map(n=>`<span class="star" data-n="${n}" onclick="selecionarEstrela(${n})">★</span>`).join('')}
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="avaliarChamado(${id})">Enviar Avaliação</button>
+        </div>` : ch.avaliacao ? `<div style="display:flex;align-items:center;gap:8px"><span>Avaliação:</span>${'★'.repeat(ch.avaliacao)}<span style="color:var(--text3)">${'☆'.repeat(5-ch.avaliacao)}</span></div>` : ''}
+
+        <!-- SERVIÇOS -->
+        ${isStaff && !isResolvido ? `
+        <div>
+          <div class="card-title" style="margin-bottom:10px">🔧 Acionar Serviços</div>
+          <div class="service-grid">
+            <button class="service-btn" onclick="acionarServico(${id},'guincho')"><div class="svc-icon">🚛</div><div class="svc-name">Guincho</div></button>
+            <button class="service-btn" onclick="acionarServico(${id},'taxi')" ${!ch.tem_taxi?'disabled title="Não incluso no plano"':''}><div class="svc-icon">🚕</div><div class="svc-name">Táxi/Uber</div></button>
+            <button class="service-btn" onclick="acionarServico(${id},'mecanico')" ${!ch.tem_mecanico24h?'disabled title="Não incluso no plano"':''}><div class="svc-icon">🔧</div><div class="svc-name">Mecânico 24h</div></button>
+            <button class="service-btn" onclick="acionarServico(${id},'oficina')" ${!ch.tem_oficina?'disabled title="Não incluso no plano"':''}><div class="svc-icon">🏭</div><div class="svc-name">Oficina</div></button>
+          </div>
+        </div>` : ''}
+
+        <!-- HISTÓRICO -->
+        ${ch.historico.length ? `
+        <div>
+          <div class="card-title" style="margin-bottom:12px">📋 Histórico</div>
+          <div class="timeline">
+            ${ch.historico.map(h=>`
+            <div class="timeline-item">
+              <div class="t-action">${h.acao}</div>
+              ${h.descricao?`<div class="t-desc">${h.descricao}</div>`:''}
+              <div class="t-meta">${h.usuario_nome} · ${formatDateTime(h.criado_em)}</div>
+            </div>`).join('')}
+          </div>
+        </div>` : ''}
+      </div>`;
+
+    const footer = [];
+    if (isStaff && !isResolvido) {
+      if (ch.status === 'aberto' || ch.status === 'escalado') {
+        footer.push(`<button class="btn btn-blue btn-sm" onclick="assumirChamado(${id})">✋ Assumir</button>`);
+      }
+      if (ch.nivel !== 'N3' && ch.status !== 'resolvido') {
+        const prox = { N1:'N2', N2:'N3' }[ch.nivel];
+        footer.push(`<button class="btn btn-ghost btn-sm" onclick="escalarChamado(${id},'${prox}')">⬆ Escalar para ${prox}</button>`);
+      }
+      footer.push(`<button class="btn btn-green btn-sm" onclick="resolverChamadoModal(${id})">✅ Resolver</button>`);
+    }
+
+    abrirModal(ch.numero + ' – ' + ch.titulo, body, footer);
+
+    // SLA countdown
+    if (ch.sla_prazo && !isResolvido) {
+      iniciarContadorSLA('sla-detail-count', 'sla-detail-wrap', new Date(ch.sla_prazo));
+    }
+  } catch(e) { toast(e.message,'error'); fecharModal(); }
+}
+
+let _slaInt = null;
+function iniciarContadorSLA(elId, wrapId, prazo) {
+  if (_slaInt) clearInterval(_slaInt);
+  function atualizar() {
+    const el = document.getElementById(elId);
+    const wrap = document.getElementById(wrapId);
+    if (!el) { clearInterval(_slaInt); return; }
+    const diff = prazo - Date.now();
+    if (diff <= 0) {
+      el.textContent = 'VENCIDO';
+      wrap.className = 'sla-timer vencido';
+      clearInterval(_slaInt);
+    } else {
+      const m = Math.floor(diff/60000);
+      const s = Math.floor((diff%60000)/1000);
+      el.textContent = `${m}:${String(s).padStart(2,'0')}`;
+      wrap.className = diff < 120000 ? 'sla-timer vencido' : diff < 300000 ? 'sla-timer' : 'sla-timer ok';
+    }
+  }
+  atualizar();
+  _slaInt = setInterval(atualizar, 1000);
+}
+
+async function assumirChamado(id) {
+  try {
+    await api('PATCH', `/chamados/${id}/assumir`);
+    toast('Chamado assumido com sucesso!');
+    fecharModal();
+    navegar(state.paginaAtual);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function escalarChamado(id, nivel) {
+  const motivo = prompt(`Motivo da escalada para ${nivel}:`);
+  if (motivo === null) return;
+  api('PATCH', `/chamados/${id}/escalar`, { nivel_para: nivel, motivo })
+    .then(() => { toast(`Chamado escalado para ${nivel}!`); fecharModal(); navegar(state.paginaAtual); })
+    .catch(e => toast(e.message,'error'));
+}
+
+function resolverChamadoModal(id) {
+  const body = `<div class="form-group"><label>Descreva a Solução</label><textarea id="solucao-txt" placeholder="Descreva o que foi feito para resolver o chamado..."></textarea></div>`;
+  abrirModal('Resolver Chamado', body, [
+    `<button class="btn btn-ghost btn-sm" onclick="fecharModal()">Cancelar</button>`,
+    `<button class="btn btn-green" onclick="confirmarResolver(${id})">✅ Confirmar Resolução</button>`
+  ]);
+}
+
+async function confirmarResolver(id) {
+  const solucao = document.getElementById('solucao-txt').value;
+  if (!solucao.trim()) return toast('Descreva a solução.','error');
+  try {
+    await api('PATCH', `/chamados/${id}/resolver`, { solucao });
+    toast('Chamado resolvido com sucesso!');
+    fecharModal();
+    navegar(state.paginaAtual);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function acionarServico(id, tipo) {
+  const prestador = prompt(`Nome do prestador (${tipo}):`);
+  if (prestador === null) return;
+  try {
+    await api('POST', `/chamados/${id}/servico`, { tipo, prestador });
+    toast(`Serviço "${tipo}" acionado!`);
+    abrirDetalhe(id);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+let estrelaSelecionada = 0;
+function selecionarEstrela(n) {
+  estrelaSelecionada = n;
+  document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('active', i < n));
+}
+async function avaliarChamado(id) {
+  if (!estrelaSelecionada) return toast('Selecione uma nota.','error');
+  try {
+    await api('POST', `/chamados/${id}/avaliar`, { nota: estrelaSelecionada });
+    toast('Avaliação enviada! Obrigado.');
+    fecharModal();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════════
+// ABRIR CHAMADO
+// ═══════════════════════════════════════════════════
+async function renderAbrirChamado() {
+  const c = document.getElementById('page-content');
+  let veiculos = [];
+  try { veiculos = await api('GET', '/veiculos'); } catch(e) {}
+
+  const tipos = [
+    { v:'pane_seca',      i:'⛽', l:'Pane Seca' },
+    { v:'pane_eletrica',  i:'⚡', l:'Pane Elétrica' },
+    { v:'acidente',       i:'💥', l:'Acidente' },
+    { v:'furo_pneu',      i:'🛞', l:'Furo de Pneu' },
+    { v:'chave_perdida',  i:'🔑', l:'Chave Perdida' },
+    { v:'bateria',        i:'🔋', l:'Bateria' },
+    { v:'superaquecimento',i:'🌡️', l:'Superaquecimento' },
+    { v:'outro',          i:'❓', l:'Outro' },
+  ];
+
+  c.innerHTML = `
+    <div style="max-width:600px;margin:0 auto">
+      <div class="card">
+        <div class="card-header"><span class="card-title">🚨 Novo Chamado</span></div>
+        <div id="novo-chamado-error" class="error-msg" style="display:none"></div>
+        <div class="form-group">
+          <label>Tipo de Ocorrência</label>
+          <div class="tipo-grid" id="tipo-grid">
+            ${tipos.map(t=>`<div class="tipo-btn" data-v="${t.v}" onclick="selecionarTipo('${t.v}',this)"><span class="tipo-icon">${t.i}</span>${t.l}</div>`).join('')}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Título / Resumo</label>
+          <input type="text" id="nc-titulo" placeholder="Ex: Carro com pane elétrica na Av. Paralela">
+        </div>
+        <div class="form-group">
+          <label>Descrição Detalhada</label>
+          <textarea id="nc-descricao" placeholder="Descreva o problema com mais detalhes..."></textarea>
+        </div>
+        ${veiculos.length ? `
+        <div class="form-group">
+          <label>Veículo (opcional)</label>
+          <select id="nc-veiculo">
+            <option value="">Selecionar veículo</option>
+            ${veiculos.map(v=>`<option value="${v.id}">${v.placa} – ${v.marca||''} ${v.modelo||''}</option>`).join('')}
+          </select>
+        </div>` : ''}
+        <div class="form-group">
+          <label>Localização</label>
+          <input type="text" id="nc-local" placeholder="Rua, bairro, referência...">
+        </div>
+        <div class="form-group">
+          <label>Prioridade</label>
+          <select id="nc-prioridade">
+            <option value="baixa">🟢 Baixa</option>
+            <option value="media" selected>🟡 Média</option>
+            <option value="alta">🟠 Alta</option>
+            <option value="critica">🔴 Crítica</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="enviarChamado()" id="btn-enviar-chamado">🚨 Abrir Chamado</button>
+      </div>
+    </div>`;
+  state._tipoSelecionado = '';
+}
+
+function selecionarTipo(v, el) {
+  state._tipoSelecionado = v;
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function enviarChamado() {
+  const titulo     = document.getElementById('nc-titulo').value;
+  const descricao  = document.getElementById('nc-descricao').value;
+  const localizacao= document.getElementById('nc-local').value;
+  const prioridade = document.getElementById('nc-prioridade').value;
+  const veiculoEl  = document.getElementById('nc-veiculo');
+  const veiculo_id = veiculoEl ? veiculoEl.value : null;
+  const tipo       = state._tipoSelecionado;
+
+  const errEl = document.getElementById('novo-chamado-error');
+  if (!tipo)   { errEl.textContent='Selecione o tipo de ocorrência.'; errEl.style.display='block'; return; }
+  if (!titulo) { errEl.textContent='Digite o título.'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+
+  const btn = document.getElementById('btn-enviar-chamado');
+  btn.innerHTML = '<div class="spinner"></div>'; btn.disabled = true;
+  try {
+    const r = await api('POST', '/chamados', { titulo, descricao, tipo, prioridade, localizacao, veiculo_id: veiculo_id||null });
+    toast(`Chamado ${r.numero} aberto com sucesso!`);
+    navegar('chamados');
+  } catch(e) { errEl.textContent=e.message; errEl.style.display='block'; }
+  finally { btn.innerHTML='🚨 Abrir Chamado'; btn.disabled=false; }
+}
+
+// ═══════════════════════════════════════════════════
+// VEÍCULOS
+// ═══════════════════════════════════════════════════
+async function renderVeiculos() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  try {
+    const veiculos = await api('GET', '/veiculos');
+    c.innerHTML = `
+      <div class="card" style="max-width:600px;margin:0 auto">
+        <div class="card-header">
+          <span class="card-title">🚗 Meus Veículos</span>
+          <button class="btn btn-primary btn-sm" onclick="abrirModalVeiculo()">➕ Adicionar</button>
+        </div>
+        ${veiculos.length ? `
+        <div class="table-wrap"><table>
+          <tr><th>Placa</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th><th></th></tr>
+          ${veiculos.map(v=>`<tr>
+            <td style="font-family:var(--font2);font-weight:700;color:var(--accent)">${v.placa}</td>
+            <td>${v.marca||'—'}</td><td>${v.modelo||'—'}</td><td>${v.ano||'—'}</td><td>${v.cor||'—'}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="removerVeiculo(${v.id})">Remover</button></td>
+          </tr>`).join('')}
+        </table></div>` : '<div class="empty-state"><div class="empty-icon">🚗</div><h3>Nenhum veículo cadastrado</h3><p>Adicione seu veículo para facilitar a abertura de chamados.</p></div>'}
+      </div>`;
+  } catch(e) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Erro ao carregar</h3></div>'; }
+}
+
+function abrirModalVeiculo() {
+  abrirModal('Adicionar Veículo', `
+    <div class="form-group"><label>Placa *</label><input type="text" id="v-placa" placeholder="ABC1234 ou ABC1D23"></div>
+    <div class="form-group"><label>Marca</label><input type="text" id="v-marca" placeholder="Toyota, Honda..."></div>
+    <div class="form-group"><label>Modelo</label><input type="text" id="v-modelo" placeholder="Corolla, Civic..."></div>
+    <div class="form-group"><label>Ano</label><input type="number" id="v-ano" placeholder="2020" min="1990" max="2026"></div>
+    <div class="form-group"><label>Cor</label><input type="text" id="v-cor" placeholder="Prata, Preto..."></div>`,
+    [`<button class="btn btn-ghost btn-sm" onclick="fecharModal()">Cancelar</button>`,
+     `<button class="btn btn-primary" onclick="salvarVeiculo()">Salvar Veículo</button>`]
+  );
+}
+
+async function salvarVeiculo() {
+  const placa = document.getElementById('v-placa').value;
+  if (!placa) return toast('Placa obrigatória.','error');
+  try {
+    await api('POST', '/veiculos', {
+      placa, marca: document.getElementById('v-marca').value,
+      modelo: document.getElementById('v-modelo').value,
+      ano: document.getElementById('v-ano').value || null,
+      cor: document.getElementById('v-cor').value,
+    });
+    toast('Veículo cadastrado!');
+    fecharModal();
+    renderVeiculos();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function removerVeiculo(id) {
+  if (!confirm('Remover este veículo?')) return;
+  try {
+    await api('DELETE', `/veiculos/${id}`);
+    toast('Veículo removido.');
+    renderVeiculos();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════════
+// MEU PLANO
+// ═══════════════════════════════════════════════════
+async function renderPlano() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  try {
+    const [perfil, planos] = await Promise.all([
+      api('GET', '/auth/perfil'),
+      api('GET', '/planos'),
+    ]);
+    c.innerHTML = `
+      <div style="max-width:720px;margin:0 auto">
+        ${perfil.plano_nome ? `
+        <div class="card" style="margin-bottom:20px;background:rgba(249,115,22,0.05);border-color:rgba(249,115,22,0.2)">
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Plano Atual</div>
+              <div style="font-family:var(--font2);font-size:24px;font-weight:800;color:var(--accent)">${perfil.plano_nome}</div>
+            </div>
+            <div style="margin-left:auto;text-align:right">
+              <div style="font-size:12px;color:var(--text2)">Status</div>
+              <span class="badge badge-resolvido">${perfil.assinatura_status||'ativa'}</span>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--text2)">Guinchos usados</div>
+              <div style="font-family:var(--font2);font-size:18px;font-weight:700">${perfil.guincho_usado||0} / ${perfil.guincho_mes||1}</div>
+            </div>
+            <div>
+              <div style="font-size:12px;color:var(--text2)">Renovação</div>
+              <div style="font-weight:600">${perfil.data_renovacao ? formatDate(perfil.data_renovacao) : '—'}</div>
+            </div>
+          </div>
+        </div>` : '<div class="error-msg">Você ainda não possui um plano ativo. Cadastre-se novamente escolhendo um plano.</div>'}
+        <div class="plans-container">
+          ${planos.map(p=>`
+          <div class="plan-detail-card ${p.nome==='Prêmio'?'destaque':''}">
+            ${p.nome==='Prêmio'?'<span class="plan-tag">⭐ Mais completo</span>':''}
+            <div style="font-family:var(--font2);font-size:20px;font-weight:800;margin-bottom:4px">${p.nome}</div>
+            <div class="plan-price-big">R$ ${parseFloat(p.preco).toFixed(2).replace('.',',')}<span class="plan-period">/mês</span></div>
+            <ul class="plan-features">
+              <li><span class="feat-ok">✓</span> SLA: ${p.sla_minutos} minutos</li>
+              <li><span class="feat-ok">✓</span> ${p.guincho_mes} guincho(s) por mês</li>
+              <li><span class="feat-ok">✓</span> Cobertura: ${p.cobertura_km?`até ${p.cobertura_km} km`:'Salvador'}</li>
+              <li><span class="${p.tem_taxi?'feat-ok':'feat-no'}">${p.tem_taxi?'✓':'✗'}</span> Táxi / Uber incluso</li>
+              <li><span class="${p.tem_mecanico24h?'feat-ok':'feat-no'}">${p.tem_mecanico24h?'✓':'✗'}</span> Mecânico 24 horas</li>
+              <li><span class="${p.tem_oficina?'feat-ok':'feat-no'}">${p.tem_oficina?'✓':'✗'}</span> Oficina credenciada</li>
+            </ul>
+            ${perfil.plano_nome===p.nome?'<div class="plan-current-badge">✅ Plano atual</div>':''}
+          </div>`).join('')}
+        </div>
+      </div>`;
+  } catch(e) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Erro ao carregar</h3></div>'; }
+}
+
+// ═══════════════════════════════════════════════════
+// NOTIFICAÇÕES
+// ═══════════════════════════════════════════════════
+async function renderNotificacoes() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  try {
+    const notifs = await api('GET', '/notificacoes');
+    c.innerHTML = `
+      <div style="max-width:640px;margin:0 auto">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+          <button class="btn btn-ghost btn-sm" onclick="marcarTodasLidas()">✓ Marcar todas como lidas</button>
+        </div>
+        <div class="notif-list">
+          ${notifs.length ? notifs.map(n=>`
+          <div class="notif-item ${!n.lida?'unread':''}">
+            <div class="notif-icon">${n.titulo.charAt(0)}</div>
+            <div style="flex:1">
+              <div class="notif-titulo">${n.titulo}</div>
+              <div class="notif-msg">${n.mensagem}</div>
+              <div class="notif-time">${formatDateTime(n.criado_em)}</div>
+            </div>
+            ${n.chamado_id?`<button class="btn btn-ghost btn-sm" onclick="abrirDetalhe(${n.chamado_id})">Ver</button>`:''}
+          </div>`).join('') : '<div class="empty-state"><div class="empty-icon">🔔</div><h3>Nenhuma notificação</h3></div>'}
+        </div>
+      </div>`;
+  } catch(e) {}
+}
+
+async function marcarTodasLidas() {
+  try {
+    await api('PATCH', '/notificacoes/ler-todas');
+    toast('Notificações marcadas como lidas.');
+    carregarNotifCount();
+    renderNotificacoes();
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════
+// USUÁRIOS (admin)
+// ═══════════════════════════════════════════════════
+async function renderUsuarios() {
+  const c = document.getElementById('page-content');
+  c.innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  try {
+    const usuarios = await api('GET', '/usuarios');
+    c.innerHTML = `
+      <div class="card">
+        <div class="card-header"><span class="card-title">👥 Usuários Cadastrados (${usuarios.length})</span></div>
+        <div class="table-wrap"><table>
+          <tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Plano</th><th>Telefone</th><th>Status</th><th>Cadastro</th></tr>
+          ${usuarios.map(u=>`<tr>
+            <td style="font-weight:600">${u.nome}</td>
+            <td style="color:var(--text2)">${u.email}</td>
+            <td><span class="badge badge-N1">${perfisLabel[u.perfil]||u.perfil}</span></td>
+            <td>${u.plano_nome?`<span class="badge badge-${u.plano_nome.toLowerCase()}">${u.plano_nome}</span>`:'—'}</td>
+            <td style="color:var(--text2)">${u.telefone||'—'}</td>
+            <td><span class="badge ${u.ativo?'badge-resolvido':'badge-cancelado'}">${u.ativo?'Ativo':'Inativo'}</span></td>
+            <td style="color:var(--text2);font-size:12px">${formatDate(u.criado_em)}</td>
+          </tr>`).join('')}
+        </table></div>
+      </div>`;
+  } catch(e) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Acesso negado</h3></div>'; }
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════
+function abrirModal(titulo, body, footerBtns = []) {
+  document.getElementById('modal-title').textContent = titulo;
+  document.getElementById('modal-body').innerHTML = typeof body === 'string' ? body : '';
+  document.getElementById('modal-footer').innerHTML = footerBtns.join('');
+  document.getElementById('modal-overlay').style.display = 'flex';
+}
+function fecharModal() { document.getElementById('modal-overlay').style.display = 'none'; if(_slaInt)clearInterval(_slaInt); }
+function fecharModalOverlay(e) { if(e.target.id==='modal-overlay') fecharModal(); }
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('pt-BR');
+}
+function formatDateTime(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function statusLabel(s) {
+  return { aberto:'Aberto', em_atendimento:'Em Atendimento', escalado:'Escalado', resolvido:'Resolvido', cancelado:'Cancelado' }[s] || s;
+}
+function tipoLabel(t) {
+  return { pane_seca:'Pane Seca', pane_eletrica:'Pane Elétrica', acidente:'Acidente', furo_pneu:'Furo de Pneu', chave_perdida:'Chave Perdida', bateria:'Bateria', superaquecimento:'Superaquecimento', outro:'Outro' }[t] || t;
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+if (state.token && state.usuario) {
+  iniciarApp();
+}
+</script>
+</body>
+</html>
